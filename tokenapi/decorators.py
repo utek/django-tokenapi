@@ -2,7 +2,7 @@ from django.http import HttpResponseForbidden
 from django.contrib.auth import authenticate, login
 from django.views.decorators.csrf import csrf_exempt
 
-try: 
+try:
     from functools import wraps
 except ImportError:
     from django.utils.functional import wraps # Python 2.4 fallback
@@ -15,7 +15,10 @@ def token_required(view_func):
     def _wrapped_view(request, *args, **kwargs):
         if 'token' in request.REQUEST and \
             'user' in request.REQUEST:
-                user = authenticate(pk=request.REQUEST['user'], token=request.REQUEST['token'])
+                try:
+                    user = authenticate(pk=request.REQUEST['user'], token=request.REQUEST['token'])
+                except ValueError:
+                    user = None
                 if user:
                     login(request, user)
                     return view_func(request, *args, **kwargs)
